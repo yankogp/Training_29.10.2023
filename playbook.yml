@@ -1,0 +1,53 @@
+- hosts: localhost
+  gather_facts: no
+  become: no
+
+  vars:
+    app_host: "0.0.0.0"
+    app_port: "5001"
+
+  tasks:
+   - name: Create code directory
+     file:
+       dest: /mnt/d/devops/ansible/code
+       state: directory
+
+   - name: Get latest application code from Github
+     git:
+       repo: https://github.com/yankogp/devops-programme.git
+       version: main
+       dest: /mnt/d/devops/ansible/code
+
+   - name: Install Pyton libraries
+     pip:
+       chdir: /mnt/d/devops/ansible/code
+       requirements: requirements.txt
+       state: present
+
+   - name: set environment
+     shell: export FLASK_APP=/mnt/d/devops/ansible/code/app
+
+   - name: Start Flask app
+     shell: "flask run -h {{ app_host }} -p {{ app_port }} &"
+
+   
+   - name: creating docker image
+     command: docker build -t ansible-docker-image:latest .
+     args:
+       chdir: 
+  
+
+   - name: adding tag to image
+     command: docker tag ansible-docker-image yankogp/home-work-06-11-2023  
+
+   - name: push image to dockerhub
+     command: docker push yankogp/home-work-06-11-2023
+
+     
+     
+
+       
+
+     
+   
+
